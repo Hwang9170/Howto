@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>코딩 몰라도 내 웹사이트 만들기 | Claude Code + Vercel</title>
+<meta name="description" content="코딩을 몰라도 Claude Code로 웹사이트를 만들고 Vercel로 인터넷에 올리는 방법. 컴퓨터(Windows·Mac)와 휴대폰 모두 그림으로 따라 하는 가이드">
+<meta property="og:title" content="코딩 몰라도 내 웹사이트 만들기">
+<meta property="og:description" content="Claude Code 설치 → VS Code 연결 → Vercel 배포까지, 그림 보고 따라만 하면 되는 가이드">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#faf9f6; --surface:#ffffff; --surface-2:#f2f0ea; --text:#1d1c1a; --muted:#6b675f;
+  --line:#e4e0d6; --accent:#c96442; --accent-soft:#f6e6de; --ok:#2f7d4f; --ok-soft:#e3f1e8;
+  --warn:#9a6a00; --warn-soft:#fbf1d6; --code-bg:#1f1e1c; --code-text:#f3efe6; --hl:#e5484d;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161513; --surface:#1f1e1b; --surface-2:#292824; --text:#ece9e2; --muted:#a19c91;
+    --line:#34322d; --accent:#e08a68; --accent-soft:#3a2820; --ok:#6cc08f; --ok-soft:#1f3328;
+    --warn:#e3b54f; --warn-soft:#352c16; --code-bg:#0e0d0c; --code-text:#f3efe6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161513; --surface:#1f1e1b; --surface-2:#292824; --text:#ece9e2; --muted:#a19c91;
+  --line:#34322d; --accent:#e08a68; --accent-soft:#3a2820; --ok:#6cc08f; --ok-soft:#1f3328;
+  --warn:#e3b54f; --warn-soft:#352c16; --code-bg:#0e0d0c; --code-text:#f3efe6;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:17px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.88em;background:var(--surface-2);padding:.12em .4em;border-radius:6px}
+kbd{font-family:inherit;font-size:.85em;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:.05em .45em;background:var(--surface);white-space:nowrap}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.progress{flex:1;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;min-width:30px}
+.progress>div{height:100%;width:0;background:var(--ok);transition:width .3s}
+.progress-label{font-size:13px;color:var(--muted);white-space:nowrap}
+.os-switch{display:flex;background:var(--surface-2);border-radius:99px;padding:3px;flex:none}
+.os-switch button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;padding:5px 12px;border-radius:99px;cursor:pointer;white-space:nowrap}
+.os-switch button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.mnav{display:none;overflow-x:auto;gap:6px;padding:0 16px 10px;scrollbar-width:none}
+.mnav::-webkit-scrollbar{display:none}
+.mnav a{flex:none;font-size:13px;font-weight:600;text-decoration:none;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px 12px}
+.mnav a.active{color:var(--bg);background:var(--text);border-color:var(--text)}
+.mnav a.done{border-color:var(--ok);color:var(--ok)}
+
+/* ---------- hero ---------- */
+.hero{max-width:1120px;margin:0 auto;padding:52px 16px 28px}
+.eyebrow{display:inline-block;font-size:14px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:99px}
+.hero h1{font-size:clamp(29px,5.5vw,52px);line-height:1.25;letter-spacing:-.03em;margin:16px 0 12px}
+.lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:700px;margin:0}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:28px;max-width:860px}
+.path{display:block;text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
+.path:hover{border-color:var(--accent)}
+.path[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.path .ico{font-size:28px}
+.path b{display:block;font-size:19px;margin-top:4px}
+.path span{display:block;color:var(--muted);font-size:15px;line-height:1.55}
+.path .pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
+.qr-card{display:flex;gap:16px;align-items:center;margin-top:18px;max-width:860px;background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:15px}
+.qr-card #qr{flex:none;background:#fff;padding:6px;border-radius:8px;line-height:0}
+.qr-card #qr img,.qr-card #qr canvas{width:92px;height:92px}
+.is-touch .qr-card{display:none}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px}
+.toc{position:sticky;top:76px;align-self:start;font-size:15px}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc a{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:10px;color:var(--muted);text-decoration:none;line-height:1.4}
+.toc a:hover{background:var(--surface-2);color:var(--text)}
+.toc a.active{background:var(--surface);color:var(--text);font-weight:700;box-shadow:var(--shadow)}
+.dot{width:22px;height:22px;flex:none;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:700}
+.toc a.done .dot{background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* ---------- step cards ---------- */
+section.step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px clamp(16px,3vw,36px);margin-bottom:24px;box-shadow:var(--shadow)}
+.step-head{display:flex;gap:14px;align-items:flex-start}
+.num{flex:none;width:40px;height:40px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:18px}
+.num.dark{background:var(--text);color:var(--bg)}
+.step h2{margin:2px 0 0;font-size:clamp(21px,3vw,26px);letter-spacing:-.02em;line-height:1.35}
+.time{font-size:14px;color:var(--muted)}
+.step h3{font-size:18px;margin:30px 0 6px;display:flex;gap:8px;align-items:baseline}
+.step h3 .sub{font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 8px;flex:none}
+ol.do{padding-left:1.4em}
+ol.do li{margin:6px 0}
+.done-btn{margin-top:22px;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-weight:700;font-size:15px;padding:11px 20px;border-radius:12px;cursor:pointer}
+.done-btn:hover{border-color:var(--ok)}
+section.step.is-done .done-btn{background:var(--ok);border-color:var(--ok);color:#fff}
+
+/* ---------- code ---------- */
+.cmd{position:relative;background:var(--code-bg);color:var(--code-text);border-radius:12px;margin:12px 0;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:15px}
+.cmd .label{display:block;font-family:Pretendard,sans-serif;font-size:12px;color:#9d978a;padding:10px 16px 0}
+.cmd pre{margin:0;padding:6px 96px 14px 16px;overflow-x:auto;white-space:pre}
+.cmd button{position:absolute;top:8px;right:8px;border:0;background:#3a3833;color:#f3efe6;font:inherit;font-family:Pretendard,sans-serif;font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer}
+.cmd button:hover{background:#4c4943}
+.cmd button.copied{background:#2f7d4f}
+
+/* ---------- callouts ---------- */
+.note{border-radius:12px;padding:14px 16px;margin:14px 0;font-size:16px}
+.note>b:first-child{display:block;margin-bottom:2px}
+.note.tip{background:var(--ok-soft)}
+.note.warn{background:var(--warn-soft)}
+.note.info{background:var(--surface-2)}
+.note p{margin:4px 0}
+.prompt{background:var(--accent-soft);border-radius:14px 14px 14px 4px;padding:12px 16px;margin:10px 0;font-size:16px}
+.prompt::before{content:"Claude에게 이렇게 →";display:block;font-size:12px;font-weight:700;color:var(--accent);margin-bottom:2px}
+.disclaimer{font-size:13px;color:var(--muted);margin:-4px 0 12px}
+
+/* ---------- OS visibility ---------- */
+[data-os="mac"] .win-only,[data-os="phone"] .win-only{display:none!important}
+[data-os="win"] .mac-only,[data-os="phone"] .mac-only{display:none!important}
+[data-os="phone"] .pc-only{display:none!important}
+[data-os="win"] .phone-only,[data-os="mac"] .phone-only{display:none!important}
+
+/* ---------- screen mockups ("그림") ---------- */
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px;margin:16px 0}
+figure.shot{margin:16px 0}
+.shots figure.shot{margin:0}
+figure.shot figcaption{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.55}
+figure.shot figcaption b{color:var(--text)}
+.frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);background:#fff;color:#1f2328;font-family:"Segoe UI",Pretendard,-apple-system,sans-serif;font-size:13px;line-height:1.5}
+.chrome{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#e9e9ec;border-bottom:1px solid #d4d4d8}
+.chrome .dots{display:flex;gap:5px;flex:none}
+.chrome .dots i{width:10px;height:10px;border-radius:50%;background:#ff5f57}
+.chrome .dots i:nth-child(2){background:#febc2e}.chrome .dots i:nth-child(3){background:#28c840}
+.chrome .url{flex:1;min-width:0;background:#fff;border-radius:6px;padding:2px 10px;color:#57606a;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chrome .ttl{flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chrome .wbtn{font-size:12px;color:#555;letter-spacing:6px;flex:none}
+.pg{padding:16px}
+.frame.term{background:#0c0c0c}
+.frame.term .chrome{background:#2b2b2b;border-color:#3a3a3a}
+.frame.term .chrome .ttl{color:#ddd}
+.frame.term .pg{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;color:#cccccc;white-space:pre-wrap;word-break:break-all;font-size:12.5px;line-height:1.65}
+.t-p{color:#8a8a8a}.t-g{color:#7ee787}.t-b{color:#79c0ff}.t-y{color:#e3b341}.t-o{color:#d97757}.t-w{color:#fff;font-weight:700}
+.frame.vsc{background:#1f1f1f;color:#ccc}
+.frame.vsc .chrome{background:#181818;border-color:#2b2b2b}
+.frame.vsc .chrome .ttl{color:#bbb;text-align:center}
+.vsc-body{display:flex;min-height:180px}
+.vsc-act{width:38px;background:#181818;display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px 0;font-size:16px;color:#858585;flex:none}
+.vsc-side{width:44%;min-width:0;background:#181818;border-left:1px solid #2b2b2b;padding:10px;font-size:12px}
+.vsc-main{flex:1;min-width:0;background:#1f1f1f;padding:10px;font-size:12px}
+.vsc-menu{display:flex;gap:12px;padding:4px 10px;background:#181818;font-size:12px;color:#ccc;border-bottom:1px solid #2b2b2b;flex-wrap:wrap}
+.vsc-drop{position:relative;margin:0 0 0 6px;width:min(220px,80%);background:#252526;border:1px solid #454545;border-radius:6px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.vsc-drop div{padding:3px 10px;border-radius:4px;display:flex;justify-content:space-between;gap:8px}
+.vsc-drop div small{color:#888}
+.vsc-drop hr{border:0;border-top:1px solid #454545;margin:4px 0}
+.vbtn{display:inline-block;background:#0078d4;color:#fff;border-radius:3px;padding:2px 10px;font-size:12px}
+.mbtn{display:inline-block;padding:7px 14px;border-radius:7px;background:#1f883d;color:#fff;font-weight:600;font-size:13px}
+.mbtn.blk{background:#111;color:#fff}.mbtn.blue{background:#0969da}.mbtn.gray{background:#f3f4f6;color:#1f2328;border:1px solid #d0d7de}.mbtn.clay{background:#c96442}
+.mbtn.full{display:block;text-align:center}
+.minput{border:1px solid #d0d7de;border-radius:7px;padding:6px 10px;background:#fff;color:#1f2328;margin:4px 0}
+.mlabel{font-size:12px;font-weight:600;color:#1f2328;margin-top:8px}
+.mh{font-size:17px;font-weight:700;margin:2px 0 8px;color:#1f2328}
+.mmuted{color:#6e7781;font-size:12px}
+.hl{outline:3px solid var(--hl);outline-offset:3px;border-radius:6px;position:relative;animation:pulse 1.8s ease-in-out infinite}
+.hl[data-n]::after{content:attr(data-n);position:absolute;top:-15px;right:-15px;width:22px;height:22px;border-radius:50%;background:var(--hl);color:#fff;font:700 12px/22px Pretendard,sans-serif;text-align:center;z-index:2}
+@keyframes pulse{50%{outline-color:rgba(229,72,77,.35)}}
+@media (prefers-reduced-motion:reduce){.hl{animation:none}}
+/* windows start / spotlight / dialogs */
+.winstart{background:#202020;color:#fff;padding:14px}
+.winsearch{background:#2d2d2d;border:1px solid #444;border-bottom:2px solid #4cc2ff;border-radius:6px;padding:6px 10px;color:#fff}
+.winres{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap}
+.winres .appico{width:42px;height:42px;border-radius:8px;background:#012456;display:grid;place-items:center;color:#fff;font:700 15px ui-monospace,monospace;flex:none}
+.winres .open{background:#2d2d2d;border-radius:6px;padding:4px 14px}
+.spot{background:linear-gradient(135deg,#7a8ca8,#b9a1c4);padding:28px 14px}
+.spotbar{background:rgba(245,245,247,.92);border-radius:12px;padding:10px 14px;font-size:16px;color:#111;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.spotres{background:rgba(245,245,247,.92);border-radius:10px;margin-top:6px;padding:8px 12px;display:flex;gap:10px;align-items:center;color:#111}
+.spotres .ti{width:28px;height:28px;border-radius:6px;background:#222;color:#fff;font:700 11px ui-monospace,monospace;display:grid;place-items:center}
+.setup{background:#f0f0f0}
+.setup .bar{background:#fff;padding:10px 14px;border-bottom:1px solid #ddd;font-weight:600;display:flex;gap:10px;align-items:center}
+.setup .bar .lg{width:24px;height:24px;border-radius:5px;background:#f05133;color:#fff;font-size:11px;display:grid;place-items:center;flex:none}
+.setup .body{padding:14px;min-height:70px;color:#333}
+.setup .btns{display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;border-top:1px solid #ddd;flex-wrap:wrap}
+.setup .btns span{border:1px solid #adadad;background:#e1e1e1;padding:2px 14px;font-size:12px;border-radius:2px}
+.setup .btns span.pri{border-color:#0078d4;background:#e5f1fb}
+.macdlg{background:#ececec;padding:18px;text-align:center}
+.macdlg .box{background:#f6f6f6;border-radius:12px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-width:320px;margin:0 auto;font-size:12.5px}
+.macdlg .btns{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.macdlg .btns span{padding:3px 14px;border-radius:6px;background:#fff;border:1px solid #ccc}
+.macdlg .btns span.pri{background:#0a7aff;color:#fff;border-color:#0a7aff}
+/* phone frame */
+.phone{width:min(270px,88%);margin:0 auto;border:9px solid #1d1d1f;border-radius:34px;overflow:hidden;background:#fff;color:#1f2328;font-family:-apple-system,Pretendard,sans-serif;font-size:13px;line-height:1.5;box-shadow:var(--shadow)}
+.phone .sb{display:flex;justify-content:space-between;padding:6px 18px 2px;font-size:11px;font-weight:600;color:#111}
+.phone .addr{margin:4px 10px 6px;background:#f1f1f3;border-radius:9px;padding:4px 10px;font-size:11px;color:#555;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phone .pg{padding:12px 14px 18px;min-height:250px}
+.phone.dark{background:#262624;color:#eee}.phone.dark .sb{color:#eee}
+.chatin{border:1px solid #d6d3cb;border-radius:14px;padding:8px 10px;color:#666;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.chatin .send{width:22px;height:22px;border-radius:7px;background:#c96442;color:#fff;display:grid;place-items:center;font-size:12px;flex:none}
+.bubble{background:#f0eee6;border-radius:12px;padding:8px 10px;margin:6px 0 6px 18%;color:#1f1f1f}
+.claude-say{margin:6px 0;color:#333}
+.siteprev{background:#fbf3e8;border-radius:10px;padding:14px;text-align:center;color:#5a3a22}
+.siteprev .h{font-size:18px;font-weight:800;margin:6px 0}
+.siteprev .row{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.siteprev .row span{background:#fff;border-radius:6px;padding:3px 8px;font-size:11px}
+
+/* ---------- faq / glossary ---------- */
+details{border:1px solid var(--line);border-radius:12px;padding:0 16px;margin:10px 0;background:var(--surface)}
+details summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px;line-height:1}
+details[open] summary::after{content:"–"}
+details>div{padding-bottom:14px}
+.glossary{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+.glossary div{background:var(--surface-2);border-radius:12px;padding:14px 16px;font-size:15px}
+.glossary b{display:block;font-size:16px}
+.checklist{list-style:none;padding:0;margin:12px 0}
+.checklist li{padding:10px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px}
+.checklist li::before{content:"□";color:var(--accent);font-weight:700}
+
+/* ---------- ask form ---------- */
+.ask label{display:block;font-weight:700;font-size:15px;margin:16px 0 6px}
+.ask label small{font-weight:400;color:var(--muted)}
+.ask input,.ask textarea,.ask select{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+.ask input:focus,.ask textarea:focus,.ask select:focus{outline:none;border-color:var(--accent)}
+.ask textarea{min-height:140px;resize:vertical}
+.ask [aria-invalid="true"]{border-color:var(--hl)}
+.ask .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.ask .submit{margin-top:18px;width:100%;border:0;background:var(--accent);color:#fff;font:inherit;font-weight:800;font-size:17px;padding:14px;border-radius:12px;cursor:pointer}
+.ask .submit:disabled{opacity:.6;cursor:wait}
+.ask .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.ask-msg{border-radius:12px;padding:14px 16px;margin-top:14px;font-weight:600}
+.ask-msg.ok{background:var(--ok-soft);color:var(--ok)}
+.ask-msg.err{background:var(--warn-soft);color:var(--warn)}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48px;border-top:1px solid var(--line)}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0}
+  .toc{display:none}
+  .mnav{display:flex}
+  .brand{display:none}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .progress-label{display:none}
+  .hero{padding-top:30px}
+  .os-switch button{padding:5px 10px;font-size:13px}
+  .cmd pre{padding:4px 16px 14px}
+  .cmd .label{padding-right:80px}
+  .frame{font-size:12px}
+  .ask .grid2{grid-template-columns:1fr}
+  section.step{padding:22px 16px;border-radius:12px}
+  .step-head .num{width:34px;height:34px;font-size:16px;border-radius:10px}
+}
+</style>
+</head>
+<body data-os="win">
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">🛠️ 내 사이트 만들기</div>
+    <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+    <div class="progress-label" id="barLabel"></div>
+    <div class="os-switch" role="group" aria-label="무엇으로 할지 선택">
+      <button data-os-btn="win" aria-pressed="true">Windows</button>
+      <button data-os-btn="mac" aria-pressed="false">Mac</button>
+      <button data-os-btn="phone" aria-pressed="false">휴대폰</button>
+    </div>
+  </div>
+  <nav class="mnav" id="mnav" aria-label="단계 이동"></nav>
+</header>
+
+<div class="hero">
+  <span class="eyebrow">코딩 몰라도 OK · 그림 보고 따라 하기</span>
+  <h1>말로 시켜서 만든 내 웹사이트,<br>인터넷에 올리기까지</h1>
+  <p class="lead">AI 코딩 도우미 <b>Claude Code</b>에게 말로 사이트를 만들게 하고, <b>Vercel</b>로 누구나 볼 수 있는 주소를 받는 방법이에요. 먼저 <b>무엇으로 할지</b> 골라주세요.</p>
+  <div class="paths">
+    <button class="path" data-path="pc">
+      <div class="ico">💻</div><b>컴퓨터로 만들기</b>
+      <span>Windows·Mac에 Claude Code와 VS Code를 설치해서 만들어요. 고치기 편하고 제일 자유로워요.</span>
+      <div class="pill">추천 · 약 40분</div>
+    </button>
+    <button class="path" data-path="phone">
+      <div class="ico">📱</div><b>휴대폰만으로 만들기</b>
+      <span>설치 없이 Claude 앱과 GitHub, Vercel 웹사이트만으로 만들어요. 컴퓨터가 없을 때 좋아요.</span>
+      <div class="pill">설치 없음 · 약 30분</div>
+    </button>
+  </div>
+  <div class="qr-card pc-only">
+    <div id="qr" aria-label="이 페이지 QR 코드"></div>
+    <div><b>📲 휴대폰으로 이 페이지 같이 열어두기</b><br>컴퓨터 화면은 설치 창으로 바빠지니, 휴대폰 카메라로 QR을 찍어서 설명은 폰으로 보면서 따라 하면 훨씬 편해요.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="toc" aria-label="목차">
+    <ol id="toc"></ol>
+    <ol style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+      <li><a href="#faq"><span class="dot">?</span>막혔을 때</a></li>
+      <li><a href="#words"><span class="dot">가</span>용어 사전</a></li>
+      <li><a href="#ask"><span class="dot">✉</span>질문하기</a></li>
+    </ol>
+  </nav>
+
+  <main>
+  <p class="disclaimer">※ 가이드 속 화면 그림은 이해를 돕기 위해 다시 그린 예시예요. 실제 화면은 버전에 따라 글자나 배치가 조금 다를 수 있어요. <b style="color:var(--hl)">빨간 테두리</b>와 번호가 누를 곳이에요.</p>
+
+  <!-- ============================ PC PATH ============================ -->
+
+  <section class="step pc-only" id="s1" data-title="준비물 챙기기">
+    <div class="step-head"><div class="num">1</div><div><h2>준비물 챙기기</h2><div class="time">⏱ 5분</div></div></div>
+    <ul class="checklist">
+      <li><div><b>컴퓨터</b> — Windows 10/11 또는 Mac</div></li>
+      <li><div><b>Claude 유료 계정</b> — <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>에서 가입 후 <b>Pro</b> 이상 구독. 무료 플랜에서는 Claude Code를 못 써요.</div></li>
+      <li><div><b>GitHub 계정</b> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>에서 무료 가입. Vercel 로그인할 때 써요.</div></li>
+    </ul>
+
+    <h3><span class="sub">알아두기</span>터미널 여는 법</h3>
+    <p>터미널은 글자로 컴퓨터에 명령하는 까만 창이에요. 이 가이드에서는 <b>복사 → 붙여넣기 → Enter</b>만 하면 됩니다.</p>
+    <figure class="shot win-only">
+      <div class="frame"><div class="winstart">
+        <div class="winsearch hl" data-n="1">🔍 powershell</div>
+        <div class="winres">
+          <div class="appico">&gt;_</div>
+          <div style="flex:1;min-width:120px"><b>Windows PowerShell</b><br><span style="color:#aaa;font-size:12px">앱</span></div>
+          <div class="open hl" data-n="2">열기</div>
+        </div>
+      </div></div>
+      <figcaption><b>①</b> 키보드의 <kbd>⊞ Windows</kbd> 키를 누르고 <b>powershell</b>이라고 입력 → <b>②</b> <b>열기</b>를 클릭하세요.</figcaption>
+    </figure>
+    <figure class="shot mac-only">
+      <div class="frame"><div class="spot">
+        <div class="spotbar hl" data-n="1">🔍 터미널</div>
+        <div class="spotres hl" data-n="2"><div class="ti">&gt;_</div><b>터미널</b><span class="mmuted">— 응용 프로그램</span></div>
+      </div></div>
+      <figcaption><b>①</b> <kbd>⌘ Command</kbd>+<kbd>Space</kbd>를 누르고 <b>터미널</b> 입력 → <b>②</b> Enter.</figcaption>
+    </figure>
+    <div class="note info"><b>💡 붙여넣기 하는 법</b>
+      <p class="win-only">아래 회색 상자의 <b>복사</b> 버튼 → 터미널 창 안에서 <b>마우스 오른쪽 클릭</b> (또는 <kbd>Ctrl</kbd>+<kbd>V</kbd>) → <kbd>Enter</kbd></p>
+      <p class="mac-only">아래 회색 상자의 <b>복사</b> 버튼 → 터미널 창 클릭 → <kbd>⌘</kbd>+<kbd>V</kbd> → <kbd>Enter</kbd></p>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step pc-only" id="s2" data-title="기본 프로그램 설치">
+    <div class="step-head"><div class="num">2</div><div><h2>기본 프로그램 2개 설치 (Git, Node.js)</h2><div class="time">⏱ 5~10분</div></div></div>
+    <p>Claude Code와 Vercel이 뒤에서 쓰는 도구예요. 설치만 해두면 직접 만질 일은 거의 없어요.</p>
+
+    <h3><span class="sub">2-1</span>Git 설치</h3>
+    <div class="win-only">
+      <div class="shots">
+        <figure class="shot">
+          <div class="frame">
+            <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">git-scm.com/downloads/win</div></div>
+            <div class="pg"><div class="mh">Download for Windows</div>
+              <div class="hl" data-n="1" style="color:#0969da;text-decoration:underline;display:inline-block">Click here to download</div>
+              <span class="mmuted"> the latest (x64) version of Git for Windows.</span>
+              <p class="mmuted" style="margin:10px 0 0">Other Git for Windows downloads…</p></div>
+          </div>
+          <figcaption><b>①</b> <a href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">git-scm.com/downloads/win</a>에서 <b>Click here to download</b> 클릭</figcaption>
+        </figure>
+        <figure class="shot">
+          <div class="frame setup">
+            <div class="bar"><div class="lg">git</div>Git Setup</div>
+            <div class="body">Select Components<br><span class="mmuted">설정은 건드리지 않아도 돼요</span></div>
+            <div class="btns"><span>&lt; Back</span><span class="pri hl" data-n="2">Next &gt;</span><span>Cancel</span></div>
+          </div>
+          <figcaption><b>②</b> 받은 파일을 열고 <b>Next</b>만 계속 → 마지막에 <b>Install</b> → <b>Finish</b></figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="mac-only">
+      <div class="cmd"><span class="label">터미널</span><pre>xcode-select --install</pre><button>복사</button></div>
+      <figure class="shot">
+        <div class="frame macdlg"><div class="box">
+          <b>"xcode-select" 명령을 사용하려면 명령어 라인 개발자 도구가 필요합니다.</b><br>지금 도구를 설치하겠습니까?
+          <div class="btns"><span>도움말 받기</span><span>나중에</span><span class="pri hl" data-n="1">설치</span></div>
+        </div></div>
+        <figcaption>이런 창이 뜨면 <b>① 설치</b> → 동의 → 끝날 때까지 기다리기. "이미 설치되어 있다"는 말이 나오면 그냥 넘어가면 돼요.</figcaption>
+      </figure>
+    </div>
+
+    <h3><span class="sub">2-2</span>Node.js 설치</h3>
+    <figure class="shot">
+      <div class="frame">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">nodejs.org/ko</div></div>
+        <div class="pg" style="text-align:center"><div class="mh" style="font-size:20px">Run JavaScript Everywhere</div>
+          <span class="mbtn hl" data-n="1">Node.js (LTS) 다운로드</span>
+          <p class="mmuted" style="margin:10px 0 0">LTS = 오래 지원하는 안정 버전</p></div>
+      </div>
+      <figcaption><b>①</b> <a href="https://nodejs.org/ko" target="_blank" rel="noopener">nodejs.org</a>에서 <b>LTS</b>라고 적힌 초록 버튼 → 받은 파일 실행 → 계속 <b>다음</b> → <b>설치</b></figcaption>
+    </figure>
+
+    <div class="note warn"><b>⚠️ 꼭 하기: 터미널 껐다 켜기</b>
+      <p>설치가 끝나면 열려 있던 터미널을 <b>완전히 닫고 새로 여세요.</b> 새로 열어야 방금 설치한 걸 알아봐요.</p>
+    </div>
+    <p>제대로 깔렸는지 확인해요. 아래를 붙여넣고 Enter:</p>
+    <div class="cmd"><span class="label">터미널</span><pre>git --version
+node --version</pre><button>복사</button></div>
+    <figure class="shot">
+      <div class="frame term">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl"><span class="win-only">Windows PowerShell</span><span class="mac-only">터미널</span></div></div>
+<div class="pg"><span class="t-p">&gt;</span> git --version
+<span class="t-g hl" data-n="✓">git version 2.xx.x</span>
+<span class="t-p">&gt;</span> node --version
+<span class="t-g">v22.xx.x</span></div>
+      </div>
+      <figcaption>이렇게 <b>숫자(버전)</b>가 나오면 성공! 숫자는 달라도 괜찮아요.</figcaption>
+    </figure>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step pc-only" id="s3" data-title="Claude Code 설치">
+    <div class="step-head"><div class="num">3</div><div><h2>Claude Code 설치하고 로그인</h2><div class="time">⏱ 5분</div></div></div>
+
+    <h3><span class="sub">3-1</span>설치 명령 한 줄</h3>
+    <div class="win-only"><div class="cmd"><span class="label">PowerShell</span><pre>irm https://claude.ai/install.ps1 | iex</pre><button>복사</button></div></div>
+    <div class="mac-only"><div class="cmd"><span class="label">터미널</span><pre>curl -fsSL https://claude.ai/install.sh | bash</pre><button>복사</button></div></div>
+    <figure class="shot">
+      <div class="frame term">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl"><span class="win-only">Windows PowerShell</span><span class="mac-only">터미널</span></div></div>
+<div class="pg"><span class="t-p">&gt;</span> <span class="win-only">irm https://claude.ai/install.ps1 | iex</span><span class="mac-only">curl -fsSL https://claude.ai/install.sh | bash</span>
+Setting up Claude Code...
+<span class="t-g hl" data-n="✓">✔ Claude Code successfully installed!</span></div>
+      </div>
+      <figcaption>글자가 쭉 올라가다가 <b>successfully installed</b>가 보이면 끝. 그다음 <b>터미널을 닫고 새로 열어요.</b></figcaption>
+    </figure>
+
+    <h3><span class="sub">3-2</span>실행하고 로그인</h3>
+    <div class="cmd"><span class="label">새로 연 터미널</span><pre>claude</pre><button>복사</button></div>
+    <div class="shots">
+      <figure class="shot">
+        <div class="frame term">
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">claude</div></div>
+<div class="pg"><span class="t-o">✻</span> <span class="t-w">Welcome to Claude Code</span>
+
+Select login method:
+<span class="hl" data-n="1" style="display:inline-block"><span class="t-b">❯ 1. Claude account with subscription</span></span>
+   2. Anthropic Console account</div>
+        </div>
+        <figcaption>처음엔 글자색 테마를 고르라고 해요(아무거나 Enter). 그다음 <b>① 1번</b>(구독 계정)에서 Enter.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame">
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">claude.ai/oauth/authorize</div></div>
+          <div class="pg" style="text-align:center"><div style="font-size:26px;color:#c96442">✻</div>
+            <div class="mh">Claude Code would like to connect to your Claude account</div>
+            <span class="mbtn clay hl" data-n="2">Authorize</span></div>
+        </div>
+        <figcaption>브라우저가 자동으로 열려요. Claude 계정으로 로그인 → <b>② Authorize(승인)</b></figcaption>
+      </figure>
+    </div>
+    <figure class="shot">
+      <div class="frame term">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">claude</div></div>
+<div class="pg"><span class="t-g">Login successful.</span> Press Enter to continue…
+
+<span class="t-o">✻</span> Welcome to Claude Code!
+<span class="hl" data-n="3" style="display:block;border:1px solid #555;border-radius:6px;padding:4px 8px">&gt; <span class="t-p">무엇이든 물어보세요</span></span></div>
+    </div>
+      <figcaption>터미널로 돌아와 Enter 몇 번 → <b>③ 입력창</b>이 보이면 성공 🎉 &nbsp;끝낼 땐 <code>/exit</code></figcaption>
+    </figure>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step pc-only" id="s4" data-title="VS Code 연결">
+    <div class="step-head"><div class="num">4</div><div><h2>VS Code 설치하고 Claude 연결하기</h2><div class="time">⏱ 5분</div></div></div>
+    <p>VS Code를 쓰면 Claude가 만든 파일을 눈으로 보면서 작업할 수 있어요.</p>
+
+    <h3><span class="sub">4-1</span>VS Code 설치</h3>
+    <p><a href="https://code.visualstudio.com" target="_blank" rel="noopener">code.visualstudio.com</a> → 파란 <b>Download</b> 버튼 → 설치. <span class="win-only">설치 중 체크 항목은 그대로 두고 <b>다음</b>.</span><span class="mac-only">받은 앱을 <b>응용 프로그램</b> 폴더로 옮겨요.</span></p>
+
+    <h3><span class="sub">4-2</span>작업 폴더 만들고 열기</h3>
+    <p>바탕화면에 새 폴더를 만들고 이름을 <code>my-site</code>처럼 <b>영어 소문자</b>로 지어요. (한글·띄어쓰기는 피하기)</p>
+    <figure class="shot">
+      <div class="frame vsc">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">Visual Studio Code</div></div>
+        <div class="vsc-menu"><span class="hl" data-n="1">파일</span><span>편집</span><span>선택</span><span>보기</span><span>터미널</span></div>
+        <div style="padding:6px 0 14px">
+          <div class="vsc-drop">
+            <div>새 텍스트 파일<small>Ctrl+N</small></div>
+            <div>파일 열기...</div>
+            <div class="hl" data-n="2" style="background:#04395e">폴더 열기...</div>
+            <hr><div>최근 항목 열기</div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>① 파일</b> 메뉴 → <b>② 폴더 열기</b> → 방금 만든 <code>my-site</code> 폴더 선택. "작성자를 신뢰하나요?"가 뜨면 <b>예, 신뢰합니다</b>.</figcaption>
+    </figure>
+
+    <h3><span class="sub">4-3</span>Claude Code 확장 설치</h3>
+    <figure class="shot">
+      <div class="frame vsc">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">확장 — my-site</div></div>
+        <div class="vsc-body">
+          <div class="vsc-act"><span>📄</span><span>🔍</span><span>⑂</span><span class="hl" data-n="1" style="color:#fff">⊞</span></div>
+          <div class="vsc-side" style="width:auto;flex:1">
+            <div style="font-size:11px;letter-spacing:.06em;color:#999">확장</div>
+            <div class="hl" data-n="2" style="background:#313131;border:1px solid #0078d4;padding:3px 8px;margin:8px 0;border-radius:3px;color:#fff">Claude Code</div>
+            <div style="display:flex;gap:8px;align-items:flex-start;padding:6px;background:#2a2d2e;border-radius:4px">
+              <div style="width:30px;height:30px;border-radius:6px;background:#d97757;color:#fff;display:grid;place-items:center;flex:none">✻</div>
+              <div style="flex:1;min-width:0"><b style="color:#fff">Claude Code for VS Code</b><br><span style="color:#999">Anthropic ✓</span></div>
+              <span class="vbtn hl" data-n="3">Install</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>왼쪽 <b>① 네모 4개 아이콘(확장)</b> → <b>② Claude Code</b> 검색 → 만든 곳이 <b>Anthropic</b>인지 확인하고 <b>③ Install</b></figcaption>
+    </figure>
+    <figure class="shot">
+      <div class="frame vsc">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">my-site</div></div>
+        <div class="vsc-body">
+          <div class="vsc-act"><span>📄</span><span>🔍</span><span>⑂</span><span>⊞</span></div>
+          <div class="vsc-main" style="display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:flex-end;gap:10px;color:#999"><span class="hl" data-n="1" style="color:#d97757;font-size:15px;padding:0 4px">✻</span><span>⋯</span></div>
+            <div style="flex:1;display:grid;place-items:center;color:#666">편집 영역</div>
+          </div>
+          <div class="vsc-side" style="border-left:1px solid #2b2b2b;display:flex;flex-direction:column">
+            <b style="color:#ddd">Claude Code</b>
+            <div style="flex:1;color:#888;padding:10px 0">무엇을 만들어 볼까요?</div>
+            <div class="hl" data-n="2" style="border:1px solid #555;border-radius:8px;padding:6px;color:#888">메시지 입력…</div>
+          </div>
+        </div>
+      </div>
+      <figcaption>오른쪽 위 <b>① ✻ Claude 아이콘</b>을 누르면 <b>② 채팅창</b>이 열려요. 처음엔 로그인을 한 번 더 물어볼 수 있어요.</figcaption>
+    </figure>
+    <div class="note info"><b>🔀 아이콘이 안 보이면: VS Code 터미널에서 쓰기</b>
+      <p>위 메뉴 <b>터미널 → 새 터미널</b> → <code>claude</code> 입력. 이렇게 켜도 VS Code와 자동 연결돼요. 연결이 안 된 것 같으면 Claude에서 <code>/ide</code> 입력.</p>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step pc-only" id="s5" data-title="사이트 만들기">
+    <div class="step-head"><div class="num">5</div><div><h2>말로 시켜서 웹사이트 만들기</h2><div class="time">⏱ 5~10분</div></div></div>
+    <p>Claude 채팅창에 <b>원하는 걸 평소 말투로</b> 적으면 돼요.</p>
+    <div class="prompt">우리 동네 빵집 소개 사이트 만들어줘. 메뉴, 영업시간, 오시는 길, 인스타 링크 넣고 따뜻한 느낌으로. 휴대폰에서도 잘 보이게. HTML 파일 하나로.</div>
+    <div class="prompt">내 포트폴리오 사이트 만들어줘. 이름은 홍길동, 사진작가야. 작품 갤러리랑 연락처 섹션 넣어줘.</div>
+
+    <h3><span class="sub">5-1</span>"해도 될까요?" 물어보면</h3>
+    <figure class="shot">
+      <div class="frame term">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">Claude Code</div></div>
+<div class="pg"><span class="t-w">Create file</span>  index.html
+  <span class="t-p">+ &lt;!doctype html&gt; …</span>
+
+Do you want to create <span class="t-y">index.html</span>?
+<span class="hl" data-n="1" style="display:inline-block"><span class="t-b">❯ 1. Yes</span></span>
+  2. Yes, allow all edits during this session
+  3. No, and tell Claude what to do differently</div>
+      </div>
+      <figcaption>Claude는 파일을 만들기 전에 허락을 받아요. <b>① Yes</b>를 고르면 돼요. 매번 묻는 게 귀찮으면 2번(이번엔 다 허락).</figcaption>
+    </figure>
+
+    <h3><span class="sub">5-2</span>결과 보기</h3>
+    <figure class="shot">
+      <div class="frame">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">파일 &nbsp;C:/Users/나/Desktop/my-site/index.html</div></div>
+        <div class="pg"><div class="siteprev"><div>🥐</div><div class="h">햇살 베이커리</div>매일 아침 7시, 갓 구운 빵<div class="row"><span>메뉴</span><span>영업시간</span><span>오시는 길</span></div></div></div>
+      </div>
+      <figcaption><span class="win-only">파일 탐색기</span><span class="mac-only">Finder</span>에서 <code>my-site</code> 폴더를 열고 <code>index.html</code>을 <b>더블클릭</b>하면 브라우저에서 보여요.</figcaption>
+    </figure>
+    <p>마음에 안 들면 또 말하세요. 몇 번이고 고쳐줘요.</p>
+    <div class="prompt">제목 글씨 더 크게 하고, 배경을 연한 베이지색으로 바꿔줘</div>
+    <div class="note tip"><b>✍️ 잘 시키는 요령</b>
+      <p>• <b>누가 무엇을</b> 보는 사이트인지 먼저 말하기<br>• 원하는 <b>분위기·색</b> 알려주기<br>• 참고할 사이트 주소가 있으면 같이 주기<br>• 한 번에 다 말하기보다 <b>조금씩 고쳐나가기</b></p>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step pc-only" id="s6" data-title="Vercel 배포">
+    <div class="step-head"><div class="num">6</div><div><h2>Vercel로 인터넷에 올리기 (배포)</h2><div class="time">⏱ 10분</div></div></div>
+    <p>지금 사이트는 내 컴퓨터에만 있어요. <b>Vercel</b>(무료)에 올리면 <code>내사이트.vercel.app</code> 같은 주소가 생겨서 누구에게나 보여줄 수 있어요.</p>
+
+    <h3><span class="sub">6-1</span>Vercel 가입</h3>
+    <figure class="shot">
+      <div class="frame">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">vercel.com/signup</div></div>
+        <div class="pg"><div style="font-size:20px">▲</div><div class="mh">Your first deploy is just a sign-up away.</div>
+          <div class="mlabel">Plan Type</div>
+          <div class="minput hl" data-n="1">◉ I'm working on personal projects <span class="mmuted">(Hobby)</span></div>
+          <div class="minput">○ I'm working on commercial projects</div>
+          <div class="mlabel">Your Name</div><div class="minput">홍길동</div>
+          <div style="margin-top:10px"><span class="mbtn blk full hl" data-n="2">Continue with GitHub</span></div></div>
+      </div>
+      <figcaption><a href="https://vercel.com/signup" target="_blank" rel="noopener">vercel.com/signup</a> → <b>① Hobby(무료, 개인용)</b> 선택 → 이름 입력 → <b>② Continue with GitHub</b> → GitHub에서 승인</figcaption>
+    </figure>
+
+    <h3><span class="sub">6-2</span>배포 도구 설치하고 로그인</h3>
+    <p>VS Code 위 메뉴 <b>터미널 → 새 터미널</b>을 열고 하나씩 실행하세요.</p>
+    <div class="cmd"><span class="label">터미널</span><pre>npm install -g vercel</pre><button>복사</button></div>
+    <div class="note warn win-only"><b>⚠️ 빨간 글씨로 "스크립트를 실행할 수 없으므로…"가 나오면</b>
+      <p>Windows 보안 설정 때문이에요. 아래를 한 번 실행하고(물어보면 <code>Y</code>) 위 명령을 다시 하세요.</p>
+      <div class="cmd"><span class="label">PowerShell</span><pre>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</pre><button>복사</button></div>
+    </div>
+    <div class="note warn mac-only"><b>⚠️ "permission denied"(권한 없음)가 나오면</b>
+      <p>앞에 <code>sudo</code>를 붙여 다시 실행하고 Mac 비밀번호 입력. (입력해도 화면엔 안 보이는 게 정상)</p>
+      <div class="cmd"><span class="label">터미널</span><pre>sudo npm install -g vercel</pre><button>복사</button></div>
+    </div>
+    <div class="cmd"><span class="label">터미널</span><pre>vercel login</pre><button>복사</button></div>
+    <p>브라우저가 열리면 GitHub로 로그인하고 <b>승인</b>. 안 열리면 터미널에 나온 주소를 눌러서 열면 돼요.</p>
+
+    <h3><span class="sub">6-3</span>배포!</h3>
+    <div class="cmd"><span class="label">터미널 (사이트 폴더에서)</span><pre>vercel --prod</pre><button>복사</button></div>
+    <figure class="shot">
+      <div class="frame term">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">터미널 — my-site</div></div>
+<div class="pg"><span class="t-p">&gt;</span> vercel --prod
+<span class="t-b">?</span> Set up and deploy "my-site"? <span class="t-g">yes</span>        <span class="t-p">← Enter</span>
+<span class="t-b">?</span> Which scope? <span class="t-g">내 이름's projects</span>        <span class="t-p">← Enter</span>
+<span class="t-b">?</span> Link to existing project? <span class="t-g">no</span>        <span class="t-p">← Enter</span>
+<span class="t-b">?</span> What's your project's name? <span class="t-g">my-site</span>  <span class="t-p">← 영어 소문자</span>
+<span class="t-b">?</span> In which directory is your code? <span class="t-g">./</span>  <span class="t-p">← Enter</span>
+<span class="t-b">?</span> Want to modify these settings? <span class="t-g">no</span>   <span class="t-p">← Enter</span>
+
+<span class="hl" data-n="★" style="display:inline-block"><span class="t-g">✅ Production: https://my-site.vercel.app</span></span></div>
+      </div>
+      <figcaption>질문이 몇 개 나오는데 거의 <b>Enter</b>만 누르면 돼요. 마지막 <b>★ https://….vercel.app</b>이 내 사이트 주소예요!</figcaption>
+    </figure>
+    <div class="note tip"><b>🤖 더 쉬운 방법: Claude에게 맡기기</b>
+      <p>가입과 <code>vercel login</code>만 해두면 나머지는 이렇게 말해도 돼요.</p>
+      <div class="prompt" style="margin-bottom:0">이 사이트 Vercel로 배포해줘</div>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step pc-only" id="s7" data-title="수정·다시 올리기">
+    <div class="step-head"><div class="num">7</div><div><h2>수정하고 다시 올리기</h2><div class="time">⏱ 1분</div></div></div>
+    <ol class="do">
+      <li>VS Code에서 폴더 열기 → Claude에게 고칠 내용 말하기</li>
+      <li>터미널에서 다시 배포 (또는 Claude에게 "다시 배포해줘")</li>
+    </ol>
+    <div class="cmd"><span class="label">터미널</span><pre>vercel --prod</pre><button>복사</button></div>
+    <p>두 번째부터는 질문 없이 바로 올라가고 <b>주소는 그대로</b>예요.</p>
+    <figure class="shot">
+      <div class="phone"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div><div class="addr">🔒 my-site.vercel.app</div>
+        <div class="pg"><div class="siteprev"><div>🥐</div><div class="h">햇살 베이커리</div>매일 아침 7시, 갓 구운 빵<div class="row"><span>메뉴</span><span>영업시간</span><span>오시는 길</span></div></div>
+        <p class="mmuted" style="text-align:center;margin-top:12px">친구 폰에서도 이렇게 보여요 🎉</p></div></div>
+      <figcaption style="text-align:center">휴대폰으로 주소를 열어서 확인해 보세요.</figcaption>
+    </figure>
+    <div class="note info"><b>🌐 나만의 주소(도메인)를 쓰고 싶다면</b>
+      <p><a href="https://vercel.com/dashboard" target="_blank" rel="noopener">Vercel 대시보드</a> → 내 프로젝트 → <b>Settings → Domains</b>에서 가지고 있는 도메인을 연결할 수 있어요.</p>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <!-- ============================ PHONE PATH ============================ -->
+
+  <section class="step phone-only" id="p1" data-title="준비물 챙기기">
+    <div class="step-head"><div class="num">1</div><div><h2>준비물 챙기기</h2><div class="time">⏱ 5분</div></div></div>
+    <p>휴대폰만으로도 돼요. 대신 사이트 파일을 <b>GitHub</b>라는 온라인 보관함에 두고, Claude가 거기서 작업해요.</p>
+    <ul class="checklist">
+      <li><div><b>Claude 앱</b> — 앱스토어/플레이스토어에서 <b>Claude</b> 설치 후 로그인. <b>Pro 이상</b> 구독이 필요해요.</div></li>
+      <li><div><b>GitHub 계정</b> — 휴대폰 브라우저로 <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>에서 무료 가입</div></li>
+      <li><div><b>Vercel 계정</b> — 4단계에서 GitHub로 바로 가입해요</div></li>
+    </ul>
+    <div class="note info"><b>💡 흐름 한눈에 보기</b>
+      <p>GitHub에 빈 보관함 만들기 → Claude 앱이 거기에 사이트를 만들어 넣기 → Vercel이 보관함을 보고 자동으로 인터넷에 올리기</p>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step phone-only" id="p2" data-title="GitHub 보관함 만들기">
+    <div class="step-head"><div class="num">2</div><div><h2>GitHub에 빈 보관함(저장소) 만들기</h2><div class="time">⏱ 5분</div></div></div>
+    <div class="shots">
+      <figure class="shot">
+        <div class="phone"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div><div class="addr">🔒 github.com/new</div>
+          <div class="pg">
+            <div class="mh">Create a new repository</div>
+            <div class="mlabel">Repository name *</div>
+            <div class="minput hl" data-n="1">my-site</div>
+            <div class="minput" style="margin-top:8px">◉ Public &nbsp; ○ Private</div>
+            <div class="minput hl" data-n="2" style="margin-top:8px">☑ Add a README file</div>
+            <div style="margin-top:12px"><span class="mbtn full hl" data-n="3">Create repository</span></div>
+          </div></div>
+        <figcaption>브라우저에서 <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> 열기 → <b>① 이름</b>은 영어 소문자(<code>my-site</code>) → <b>② Add a README</b> 켜기(On) → <b>③ Create repository</b></figcaption>
+      </figure>
+    </div>
+    <div class="note tip"><b>✅ README를 꼭 켜는 이유</b><p>완전히 빈 보관함은 Claude가 열지 못할 수 있어요. README 파일 하나가 있으면 바로 작업할 수 있어요.</p></div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step phone-only" id="p3" data-title="Claude로 만들기">
+    <div class="step-head"><div class="num">3</div><div><h2>Claude 앱에서 사이트 만들기</h2><div class="time">⏱ 10분</div></div></div>
+    <div class="shots">
+      <figure class="shot">
+        <div class="phone dark"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div>
+          <div class="pg">
+            <div style="font-weight:700;margin-bottom:10px">☰ &nbsp;Claude</div>
+            <div style="padding:6px 0;color:#bbb">💬 채팅</div>
+            <div class="hl" data-n="1" style="padding:6px 8px;color:#fff">⌨️ Code</div>
+            <div style="padding:6px 0;color:#bbb">📁 프로젝트</div>
+          </div></div>
+        <figcaption>Claude 앱 왼쪽 위 <b>☰ 메뉴</b> → <b>① Code</b>. (안 보이면 앱을 최신 버전으로 업데이트)</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="phone dark"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div>
+          <div class="pg">
+            <div class="mmuted" style="color:#aaa">저장소 선택</div>
+            <div class="hl" data-n="2" style="background:#333;border-radius:10px;padding:8px 10px;margin:6px 0 14px;color:#fff">📦 내아이디/my-site ▾</div>
+            <div class="chatin hl" data-n="3" style="border-color:#555;color:#ccc">빵집 소개 사이트 만들어줘… <span class="send">↑</span></div>
+          </div></div>
+        <figcaption>처음엔 <b>GitHub 연결</b>을 물어봐요 → 승인하고 <code>my-site</code> 접근 허용 → <b>② 저장소 선택</b> → <b>③ 만들고 싶은 사이트 설명</b> 보내기</figcaption>
+      </figure>
+    </div>
+    <div class="prompt">우리 동네 빵집 소개 사이트를 index.html 하나로 만들어줘. 메뉴, 영업시간, 오시는 길 넣고 따뜻한 느낌으로. 휴대폰에서 잘 보이게.</div>
+    <p>Claude가 인터넷 속 작업 공간에서 파일을 만들어요. 몇 분 걸리니 기다리면 돼요. 화면을 꺼도 계속 작업해요.</p>
+
+    <h3><span class="sub">3-2</span>내 보관함에 반영하기</h3>
+    <div class="shots">
+      <figure class="shot">
+        <div class="phone dark"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div>
+          <div class="pg">
+            <div class="claude-say" style="color:#ddd">✻ index.html을 만들었어요. 메뉴·영업시간·오시는 길 섹션이 들어 있어요.</div>
+            <div style="background:#333;border-radius:10px;padding:8px 10px;margin:10px 0;color:#bbb;font-size:12px">+ index.html &nbsp;<span style="color:#7ee787">+214</span></div>
+            <span class="mbtn clay full hl" data-n="1">Create PR</span>
+          </div></div>
+        <figcaption>작업이 끝나면 <b>① Create PR</b>(변경 요청 만들기) → GitHub 화면으로 넘어가요</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="phone"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div><div class="addr">🔒 github.com/…/pull/1</div>
+          <div class="pg">
+            <div class="mh" style="font-size:15px">빵집 소개 사이트 추가 #1</div>
+            <div class="mmuted">● Open</div>
+            <div style="border:1px solid #d0d7de;border-radius:8px;padding:10px;margin-top:12px">
+              <div class="mmuted" style="color:#1f883d">✓ No conflicts with base branch</div>
+              <div style="margin-top:8px"><span class="mbtn full hl" data-n="2">Merge pull request</span></div>
+            </div>
+          </div></div>
+        <figcaption><b>② Merge pull request</b> → <b>Confirm merge</b>. 이제 사이트 파일이 내 보관함에 들어갔어요!</figcaption>
+      </figure>
+    </div>
+    <div class="note info"><b>🤔 PR? Merge?</b><p>Claude가 "이렇게 바꿔도 될까요?" 하고 올린 <b>변경 요청(PR)</b>을 내가 <b>합치기(Merge)</b>로 승인하는 거예요.</p></div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step phone-only" id="p4" data-title="Vercel 배포">
+    <div class="step-head"><div class="num">4</div><div><h2>Vercel로 인터넷에 올리기</h2><div class="time">⏱ 5분</div></div></div>
+    <div class="shots">
+      <figure class="shot">
+        <div class="phone"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div><div class="addr">🔒 vercel.com/new</div>
+          <div class="pg">
+            <div class="mh">Let's build something new</div>
+            <div class="mmuted">Import Git Repository</div>
+            <div style="border:1px solid #e5e5e5;border-radius:8px;margin-top:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;gap:6px"><span>📦 my-site</span><span class="mbtn blk hl" data-n="1" style="padding:4px 10px">Import</span></div>
+              <div style="padding:8px 10px;border-top:1px solid #eee;color:#999">📦 other-repo</div>
+            </div>
+          </div></div>
+        <figcaption>브라우저로 <a href="https://vercel.com/new" target="_blank" rel="noopener">vercel.com/new</a> → <b>Continue with GitHub</b>로 가입·로그인(Hobby 무료 선택) → <code>my-site</code> 옆 <b>① Import</b></figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="phone"><div class="sb"><span>9:41</span><span>●●● 🔋</span></div><div class="addr">🔒 vercel.com/new/import</div>
+          <div class="pg">
+            <div class="mh">New Project</div>
+            <div class="mlabel">Project Name</div><div class="minput">my-site</div>
+            <div class="mlabel">Framework Preset</div><div class="minput">Other</div>
+            <div style="margin-top:14px"><span class="mbtn blk full hl" data-n="2">Deploy</span></div>
+          </div></div>
+        <figcaption>아무것도 바꾸지 말고 <b>② Deploy</b> → 1분쯤 뒤 축하 화면과 함께 <b>https://my-site.vercel.app</b> 주소가 나와요 🎉</figcaption>
+      </figure>
+    </div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <section class="step phone-only" id="p5" data-title="수정·다시 올리기">
+    <div class="step-head"><div class="num">5</div><div><h2>수정하고 다시 올리기</h2><div class="time">⏱ 3분</div></div></div>
+    <p>이제부터는 보관함에 합치기만 하면 <b>Vercel이 알아서 다시 올려줘요.</b></p>
+    <ol class="do">
+      <li>Claude 앱 → Code → <code>my-site</code> 선택 → 고칠 내용 말하기</li>
+      <li>끝나면 <b>Create PR</b> → GitHub에서 <b>Merge pull request</b></li>
+      <li>1분쯤 뒤 같은 주소에서 바뀐 사이트 확인!</li>
+    </ol>
+    <div class="prompt">메뉴에 크루아상 3,500원 추가하고 배경을 연한 베이지색으로 바꿔줘</div>
+    <button class="done-btn">✓ 다 했어요</button>
+  </section>
+
+  <!-- ============================ COMMON ============================ -->
+
+  <section class="step" id="faq">
+    <div class="step-head"><div class="num dark">?</div><div><h2>막혔을 때</h2><div class="time">자주 나오는 문제와 해결법</div></div></div>
+    <details class="pc-only"><summary>"claude"(또는 git, node, vercel)을 찾을 수 없다고 나와요</summary><div>
+      <p>설치 직후라 터미널이 아직 몰라서 그래요. <b>터미널(또는 VS Code)을 완전히 껐다 켜세요.</b> 그래도 안 되면 컴퓨터를 재시작하고, 그래도 안 되면 3단계 설치 명령을 다시 실행해 보세요.</p>
+    </div></details>
+    <details><summary>Claude Code를 쓸 수 없다고 나와요</summary><div>
+      <p>Claude <b>무료 플랜</b>에서는 Claude Code를 쓸 수 없어요. <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>에서 Pro 이상인지 확인하세요. 다른 계정으로 로그인됐다면 <code>/logout</code> 후 <code>/login</code>.</p>
+    </div></details>
+    <details class="pc-only"><summary>VS Code에 Claude 아이콘이 안 보여요</summary><div>
+      <p>VS Code를 재시작하거나 아무 파일이나 하나 열어보세요. 확장 목록에서 <b>Claude Code</b>가 켜져 있는지도 확인하세요. 안 되면 VS Code 터미널에서 <code>claude</code>를 실행해도 똑같이 쓸 수 있어요.</p>
+    </div></details>
+    <details class="phone-only"><summary>Claude 앱에 Code 메뉴가 안 보여요</summary><div>
+      <p>앱을 최신 버전으로 업데이트하고, Pro 이상 구독인지 확인하세요. 앱 대신 휴대폰 브라우저에서 <a href="https://claude.ai/code" target="_blank" rel="noopener">claude.ai/code</a>로 들어가도 똑같이 쓸 수 있어요.</p>
+    </div></details>
+    <details class="phone-only"><summary>Claude에서 내 저장소가 목록에 안 나와요</summary><div>
+      <p>GitHub 연결 때 저장소 접근을 허용하지 않아서 그래요. Claude Code 화면의 GitHub 연결(설정)에서 <code>my-site</code> 접근을 추가로 허용해 주세요.</p>
+    </div></details>
+    <details><summary>배포했는데 화면이 하얗거나 404가 떠요</summary><div>
+      <p>첫 화면 파일 이름 문제인 경우가 많아요. 파일 이름이 정확히 <code>index.html</code>인지 확인하세요. Claude에게 이렇게 물어봐도 돼요:</p>
+      <div class="prompt" style="margin-bottom:0">배포했는데 화면이 안 나와. 원인 찾아서 고쳐줘</div>
+    </div></details>
+    <details class="pc-only"><summary>배포할 때 이상한 폴더 경로가 나와요</summary><div>
+      <p>터미널이 사이트 폴더가 아닌 곳에 있어서 그래요. <kbd>Ctrl</kbd>+<kbd>C</kbd>로 취소하고, VS Code에서 사이트 폴더를 연 상태로 <b>새 터미널</b>을 열어 다시 하세요.</p>
+    </div></details>
+    <details><summary>에러 메시지가 무슨 말인지 모르겠어요</summary><div>
+      <p>에러 문구를 통째로 복사해서 Claude에게 붙여넣고 <b>"이거 무슨 뜻이야? 해결해줘"</b>라고 하세요. 제일 빠른 해결법이에요. 😉</p>
+    </div></details>
+    <details><summary>돈이 드나요?</summary><div>
+      <p>Claude Code는 Claude 유료 구독(Pro 이상)이 필요해요. VS Code·Git·Node.js·GitHub는 무료, Vercel도 개인용 <b>Hobby 플랜은 무료</b>예요. 도메인을 따로 사면 그 비용만 들어요.</p>
+    </div></details>
+  </section>
+
+  <section class="step" id="words">
+    <div class="step-head"><div class="num dark">가</div><div><h2>용어 사전</h2><div class="time">몰라도 되지만 알면 덜 무서운 말들</div></div></div>
+    <div class="glossary">
+      <div><b>터미널 / CLI</b>글자로 명령하는 창. CLI는 "글자로 쓰는 프로그램"이라는 뜻.</div>
+      <div><b>Claude Code</b>파일을 직접 만들고 고쳐주는 AI 코딩 도우미.</div>
+      <div><b>VS Code</b>코드 파일을 보고 편집하는 무료 프로그램. 아주 똑똑한 메모장.</div>
+      <div><b>확장(Extension)</b>VS Code에 기능을 더하는 앱. 폰에 앱 까는 것과 비슷.</div>
+      <div><b>GitHub / 저장소</b>코드 파일을 보관하는 온라인 보관함. 보관함 하나 = 저장소(repository).</div>
+      <div><b>PR / Merge</b>"이렇게 바꿀게요" 요청(PR)과 그걸 승인해서 합치기(Merge).</div>
+      <div><b>배포(Deploy)</b>내 사이트를 인터넷에 올려서 누구나 볼 수 있게 하는 것.</div>
+      <div><b>Vercel</b>웹사이트를 무료로 올려주는 서비스. xxx.vercel.app 주소를 줌.</div>
+      <div><b>도메인</b>사이트 주소. 예: <code>mybakery.com</code></div>
+      <div><b>index.html</b>사이트에 들어가면 가장 먼저 보이는 첫 화면 파일.</div>
+    </div>
+  </section>
+
+  <section class="step" id="ask">
+    <div class="step-head"><div class="num dark">✉</div><div><h2>그래도 막혔다면, 질문해 주세요</h2><div class="time">남겨주신 이메일로 답장 드려요</div></div></div>
+    <form class="ask" id="askForm" action="https://formspree.io/f/moeddvbg" method="POST" novalidate>
+      <input type="hidden" name="_subject" value="[가이드 사이트] 새 질문이 왔어요">
+      <input type="hidden" name="보고있던_가이드" id="askOS" value="">
+      <div class="hp" aria-hidden="true"><label>비워두세요<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+      <div class="grid2">
+        <div><label for="askName">이름(닉네임) <small>· 선택</small></label><input id="askName" name="name" maxlength="30" autocomplete="nickname" placeholder="예: 빵집사장"></div>
+        <div><label for="askEmail">답장 받을 이메일</label><input id="askEmail" type="email" name="email" required autocomplete="email" placeholder="you@example.com"></div>
+      </div>
+      <label for="askStep">어디서 막혔나요?</label>
+      <select id="askStep" name="막힌_단계"></select>
+      <label for="askMsg">질문 내용 <small>· 에러 문구가 있으면 그대로 붙여넣어 주세요</small></label>
+      <textarea id="askMsg" name="message" required minlength="5" maxlength="3000" placeholder="예: vercel --prod 를 입력했더니 빨간 글씨로 ... 라고 나와요"></textarea>
+      <button class="submit" type="submit">질문 보내기</button>
+      <div id="askResult" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  </main>
+</div>
+
+<footer>다 하셨나요? 수고하셨어요! 이제 머릿속 아이디어를 말로 만들어 보세요. 🚀</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script>
+(function(){
+  var store = {
+    get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+    set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  };
+  var isTouch = window.matchMedia && matchMedia('(hover: none) and (pointer: coarse)').matches;
+  if(isTouch) document.documentElement.classList.add('is-touch');
+
+  var toc=document.getElementById('toc'), mnav=document.getElementById('mnav');
+  var allSteps=[].slice.call(document.querySelectorAll('section.step[data-title]'));
+  var done={}; try{done=JSON.parse(store.get('howto-done')||'{}')}catch(e){done={}}
+  var curOS='win';
+
+  function visibleSteps(){ return allSteps.filter(function(s){ return s.offsetParent!==null; }); }
+
+  function buildNav(){
+    toc.innerHTML=''; mnav.innerHTML='';
+    visibleSteps().forEach(function(s,i){
+      var li=document.createElement('li');
+      li.innerHTML='<a href="#'+s.id+'"><span class="dot">'+(i+1)+'</span>'+s.dataset.title+'</a>';
+      toc.appendChild(li);
+      var m=document.createElement('a'); m.href='#'+s.id; m.textContent=(i+1)+'. '+s.dataset.title; mnav.appendChild(m);
+    });
+    var q=document.createElement('a'); q.href='#ask'; q.textContent='✉ 질문'; mnav.appendChild(q);
+    render(); buildStepSelect();
+  }
+
+  function render(){
+    var vs=visibleSteps(), n=0;
+    allSteps.forEach(function(s){
+      var d=!!done[s.id];
+      s.classList.toggle('is-done',d);
+      s.querySelector('.done-btn').textContent = d ? '✓ 완료! (다시 누르면 취소)' : '✓ 다 했어요';
+    });
+    vs.forEach(function(s){
+      var d=!!done[s.id]; if(d) n++;
+      [toc,mnav].forEach(function(nav){ var a=nav.querySelector('a[href="#'+s.id+'"]'); if(a) a.classList.toggle('done',d); });
+    });
+    document.getElementById('bar').style.width=(vs.length? n/vs.length*100 : 0)+'%';
+    document.getElementById('barLabel').textContent=n+' / '+vs.length+' 완료';
+  }
+
+  function setOS(os, scroll){
+    curOS=os;
+    document.body.setAttribute('data-os',os);
+    document.querySelectorAll('[data-os-btn]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.osBtn===os)); });
+    document.querySelectorAll('[data-path]').forEach(function(b){ b.setAttribute('aria-pressed', String((b.dataset.path==='phone')===(os==='phone'))); });
+    document.getElementById('askOS').value={win:'컴퓨터(Windows)',mac:'컴퓨터(Mac)',phone:'휴대폰'}[os];
+    store.set('howto-os',os);
+    buildNav();
+    if(scroll){ var first=visibleSteps()[0]; if(first) first.scrollIntoView({behavior:'smooth'}); }
+  }
+
+  allSteps.forEach(function(s){
+    s.querySelector('.done-btn').addEventListener('click',function(){
+      done[s.id]=!done[s.id]; store.set('howto-done',JSON.stringify(done)); render();
+      if(done[s.id]){
+        var vs=visibleSteps(), i=vs.indexOf(s), next=vs[i+1]||document.getElementById('faq');
+        next.scrollIntoView({behavior:'smooth'});
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-os-btn]').forEach(function(b){ b.addEventListener('click',function(){ setOS(b.dataset.osBtn); }); });
+  document.querySelectorAll('[data-path]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var os = b.dataset.path==='phone' ? 'phone' : (/Mac/.test(navigator.platform||'') ? 'mac' : (curOS==='phone'?'win':curOS));
+      setOS(os, true);
+    });
+  });
+
+  var saved=store.get('howto-os');
+  var qm=(location.search.match(/[?&]mode=(win|mac|phone)/)||[])[1];
+  if(qm) saved=qm;
+  else if(/^#p\d/.test(location.hash)) saved='phone';
+  else if(/^#s\d/.test(location.hash) && saved==='phone') saved='win';
+  if(!saved){ saved = (!isTouch && /Mac/.test(navigator.platform||navigator.userAgent)) ? 'mac' : 'win'; }
+  setOS(saved);
+
+  // copy buttons
+  document.querySelectorAll('.cmd button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var text=btn.parentElement.querySelector('pre').innerText;
+      function ok(){ btn.textContent='복사됨 ✓'; btn.classList.add('copied'); setTimeout(function(){btn.textContent='복사';btn.classList.remove('copied')},1500); }
+      function fallback(){ var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy')}catch(e){} ta.remove(); ok(); }
+      if(navigator.clipboard){ navigator.clipboard.writeText(text).then(ok,fallback); } else fallback();
+    });
+  });
+
+  // active section highlight
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        [toc,mnav].forEach(function(nav){
+          nav.querySelectorAll('a').forEach(function(a){a.classList.remove('active')});
+          var a=nav.querySelector('a[href="#'+e.target.id+'"]');
+          if(a){ a.classList.add('active'); if(nav===mnav) mnav.scrollTo({left:a.offsetLeft-16,behavior:'smooth'}); }
+        });
+      });
+    },{rootMargin:'-35% 0px -60% 0px'});
+    allSteps.concat([document.getElementById('ask')]).forEach(function(s){io.observe(s)});
+  }
+
+  // QR code for current page (desktop only)
+  window.addEventListener('load',function(){
+    if(isTouch || !window.QRCode || !/^https?:/.test(location.protocol)) { if(!/^https?:/.test(location.protocol)) document.querySelector('.qr-card').style.display='none'; return; }
+    new QRCode(document.getElementById('qr'),{text:location.origin+location.pathname,width:184,height:184,correctLevel:QRCode.CorrectLevel.M});
+  });
+
+  // ---------- 질문 폼 (Formspree) ----------
+  function buildStepSelect(){
+    var sel=document.getElementById('askStep'), prev=sel.value;
+    sel.innerHTML='';
+    visibleSteps().map(function(s,i){return (i+1)+'단계: '+s.dataset.title}).concat(['기타 / 잘 모르겠어요']).forEach(function(t){
+      var o=document.createElement('option'); o.textContent=t; sel.appendChild(o);
+    });
+    if(prev) sel.value=prev;
+  }
+
+  var form=document.getElementById('askForm'), result=document.getElementById('askResult');
+  function showMsg(type,text){ result.className='ask-msg '+type; result.textContent=text; }
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var email=form.querySelector('#askEmail'), msg=form.querySelector('#askMsg'), bad=false;
+    [email,msg].forEach(function(f){ f.removeAttribute('aria-invalid'); });
+    if(!email.value.trim() || !email.checkValidity()){ email.setAttribute('aria-invalid','true'); bad=true; }
+    if(msg.value.trim().length<5){ msg.setAttribute('aria-invalid','true'); bad=true; }
+    if(bad){ showMsg('err','이메일 주소와 질문 내용(5글자 이상)을 확인해 주세요.'); (email.getAttribute('aria-invalid')?email:msg).focus(); return; }
+
+    var btn=form.querySelector('.submit'); btn.disabled=true; btn.textContent='보내는 중…'; result.className=''; result.textContent='';
+    fetch(form.action,{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}})
+      .then(function(r){ return r.json().catch(function(){return {}}).then(function(j){ return {ok:r.ok, j:j}; }); })
+      .then(function(res){
+        if(res.ok){
+          form.reset(); buildStepSelect();
+          showMsg('ok','질문이 잘 전달됐어요! 적어주신 이메일로 답장 드릴게요. 🙌');
+        } else {
+          var m = res.j && res.j.errors ? res.j.errors.map(function(x){return x.message}).join(' / ') : '';
+          showMsg('err','전송에 실패했어요. '+(m||'잠시 후 다시 시도해 주세요.'));
+        }
+      })
+      .catch(function(){ showMsg('err','인터넷 연결을 확인하고 다시 시도해 주세요.'); })
+      .finally(function(){ btn.disabled=false; btn.textContent='질문 보내기'; });
+  });
+})();
+</script>
+<!-- 방문자 수 집계: Vercel Web Analytics (Vercel 대시보드 → Analytics 에서 확인) -->
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
