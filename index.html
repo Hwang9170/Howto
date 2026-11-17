@@ -60,7 +60,8 @@ kbd{font-family:inherit;font-size:.85em;border:1px solid var(--line);border-bott
 .path:hover{border-color:var(--accent)}
 .path[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .path .ico{font-size:28px}
-.path b{display:block;font-size:19px;margin-top:4px}
+.path>b{display:block;font-size:19px;margin-top:4px}
+.path span b{color:var(--text)}
 .path span{display:block;color:var(--muted);font-size:15px;line-height:1.55}
 .path .pill{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
 .qr-card{display:flex;gap:16px;align-items:center;margin-top:18px;max-width:860px;background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:15px}
@@ -117,6 +118,19 @@ section.step.is-done .done-btn{background:var(--ok);border-color:var(--ok);color
 [data-os="win"] .mac-only,[data-os="phone"] .mac-only{display:none!important}
 [data-os="phone"] .pc-only{display:none!important}
 [data-os="win"] .phone-only,[data-os="mac"] .phone-only{display:none!important}
+[data-track="free"] .paid-only{display:none!important}
+[data-track="paid"] .free-only{display:none!important}
+
+/* ---------- track compare ---------- */
+.compare{width:100%;max-width:860px;margin-top:22px;border-collapse:separate;border-spacing:0;font-size:15px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.compare th,.compare td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.compare tr:last-child td{border-bottom:0}
+.compare thead th{background:var(--surface-2);font-size:14px}
+.compare td:first-child{color:var(--muted);white-space:nowrap;font-size:14px}
+.badge-free{display:inline-block;font-size:12px;font-weight:800;padding:1px 8px;border-radius:99px;background:var(--ok-soft);color:var(--ok)}
+.badge-paid{display:inline-block;font-size:12px;font-weight:800;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.os-switch button:disabled{opacity:.35;cursor:not-allowed}
+.copilot-chip{display:inline-flex;align-items:center;gap:4px;background:#2b2b2b;border:1px solid #454545;border-radius:5px;padding:1px 8px;color:#ddd}
 
 /* ---------- screen mockups ("그림") ---------- */
 .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px;margin:16px 0}
@@ -249,13 +263,17 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48p
 }
 </style>
 </head>
-<body data-os="win">
+<body data-os="win" data-track="free">
 
 <header class="topbar">
   <div class="topbar-in">
     <div class="brand">🛠️ 내 사이트 만들기</div>
     <div class="progress" aria-hidden="true"><div id="bar"></div></div>
     <div class="progress-label" id="barLabel"></div>
+    <div class="os-switch" role="group" aria-label="무료/유료 트랙 선택">
+      <button data-track-btn="free" aria-pressed="true">무료</button>
+      <button data-track-btn="paid" aria-pressed="false">유료</button>
+    </div>
     <div class="os-switch" role="group" aria-label="무엇으로 할지 선택">
       <button data-os-btn="win" aria-pressed="true">Windows</button>
       <button data-os-btn="mac" aria-pressed="false">Mac</button>
@@ -268,19 +286,33 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48p
 <div class="hero">
   <span class="eyebrow">코딩 몰라도 OK · 그림 보고 따라 하기</span>
   <h1>말로 시켜서 만든 내 웹사이트,<br>인터넷에 올리기까지</h1>
-  <p class="lead">AI 코딩 도우미 <b>Claude Code</b>에게 말로 사이트를 만들게 하고, <b>Vercel</b>로 누구나 볼 수 있는 주소를 받는 방법이에요. 먼저 <b>무엇으로 할지</b> 골라주세요.</p>
+  <p class="lead">AI 코딩 도우미에게 말로 사이트를 만들게 하고, <b>Vercel</b>로 누구나 볼 수 있는 주소를 받는 방법이에요. 돈 안 들이고 해볼 수도 있어요. 먼저 <b>어떤 방법으로 할지</b> 골라주세요.</p>
   <div class="paths">
-    <button class="path" data-path="pc">
-      <div class="ico">💻</div><b>컴퓨터로 만들기</b>
-      <span>Windows·Mac에 Claude Code와 VS Code를 설치해서 만들어요. 고치기 편하고 제일 자유로워요.</span>
-      <div class="pill">추천 · 약 40분</div>
+    <button class="path" data-pick="free">
+      <div class="ico">🆓</div><b>무료로 해보기</b>
+      <span>컴퓨터 + VS Code에 들어있는 <b>GitHub Copilot</b> 무료 플랜으로 만들어요. 결제 없이 GitHub 계정만 있으면 돼요.</span>
+      <div class="pill">0원 · 약 30분</div>
     </button>
-    <button class="path" data-path="phone">
-      <div class="ico">📱</div><b>휴대폰만으로 만들기</b>
+    <button class="path" data-pick="paid">
+      <div class="ico">💎</div><b>유료로 제대로 하기</b>
+      <span>컴퓨터에 <b>Claude Code</b>를 설치해서 만들어요. 사용량이 넉넉해서 큰 사이트도 계속 고쳐나가기 좋아요.</span>
+      <div class="pill" style="background:var(--accent-soft);color:var(--accent)">Claude Pro 구독 · 약 40분</div>
+    </button>
+    <button class="path" data-pick="phone">
+      <div class="ico">📱</div><b>휴대폰만으로 하기</b>
       <span>설치 없이 Claude 앱과 GitHub, Vercel 웹사이트만으로 만들어요. 컴퓨터가 없을 때 좋아요.</span>
-      <div class="pill">설치 없음 · 약 30분</div>
+      <div class="pill" style="background:var(--accent-soft);color:var(--accent)">Claude Pro 구독 · 약 30분</div>
     </button>
   </div>
+  <table class="compare">
+    <thead><tr><th></th><th><span class="badge-free">무료 트랙</span></th><th><span class="badge-paid">유료 트랙</span></th></tr></thead>
+    <tbody>
+      <tr><td>AI 도우미</td><td>GitHub Copilot (VS Code 안에 내장)</td><td>Claude Code</td></tr>
+      <tr><td>비용</td><td><b>0원</b> (GitHub 계정만)</td><td>Claude Pro 이상 구독</td></tr>
+      <tr><td>사용량</td><td>한 달 사용 횟수 제한 있음</td><td>넉넉함</td></tr>
+      <tr><td>이럴 때 추천</td><td>일단 한번 해보고 싶을 때</td><td>계속 만들고 고칠 때, 큰 작업</td></tr>
+    </tbody>
+  </table>
   <div class="qr-card pc-only">
     <div id="qr" aria-label="이 페이지 QR 코드"></div>
     <div><b>📲 휴대폰으로 이 페이지 같이 열어두기</b><br>컴퓨터 화면은 설치 창으로 바빠지니, 휴대폰 카메라로 QR을 찍어서 설명은 폰으로 보면서 따라 하면 훨씬 편해요.</div>
@@ -306,9 +338,12 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48p
     <div class="step-head"><div class="num">1</div><div><h2>준비물 챙기기</h2><div class="time">⏱ 5분</div></div></div>
     <ul class="checklist">
       <li><div><b>컴퓨터</b> — Windows 10/11 또는 Mac</div></li>
-      <li><div><b>Claude 유료 계정</b> — <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>에서 가입 후 <b>Pro</b> 이상 구독. 무료 플랜에서는 Claude Code를 못 써요.</div></li>
-      <li><div><b>GitHub 계정</b> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>에서 무료 가입. Vercel 로그인할 때 써요.</div></li>
+      <li class="paid-only"><div><b>Claude 유료 계정</b> — <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>에서 가입 후 <b>Pro</b> 이상 구독. 무료 플랜에서는 Claude Code를 못 써요.</div></li>
+      <li><div><b>GitHub 계정</b> — <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>에서 무료 가입. <span class="free-only">Copilot과 Vercel 둘 다 이 계정으로 로그인해요.</span><span class="paid-only">Vercel 로그인할 때 써요.</span></div></li>
     </ul>
+    <div class="note tip free-only"><b>💸 정말 0원이에요</b>
+      <p>VS Code, GitHub Copilot 무료 플랜, Node.js, Vercel 개인용(Hobby) 모두 무료예요. 단, Copilot 무료 플랜은 <b>한 달에 쓸 수 있는 횟수</b>가 정해져 있어요. 사이트 하나 만들어 보기엔 충분하고, 다 쓰면 다음 달에 다시 채워져요.</p>
+    </div>
 
     <h3><span class="sub">알아두기</span>터미널 여는 법</h3>
     <p>터미널은 글자로 컴퓨터에 명령하는 까만 창이에요. 이 가이드에서는 <b>복사 → 붙여넣기 → Enter</b>만 하면 됩니다.</p>
@@ -338,9 +373,10 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48p
   </section>
 
   <section class="step pc-only" id="s2" data-title="기본 프로그램 설치">
-    <div class="step-head"><div class="num">2</div><div><h2>기본 프로그램 2개 설치 (Git, Node.js)</h2><div class="time">⏱ 5~10분</div></div></div>
-    <p>Claude Code와 Vercel이 뒤에서 쓰는 도구예요. 설치만 해두면 직접 만질 일은 거의 없어요.</p>
+    <div class="step-head"><div class="num">2</div><div><h2><span class="paid-only">기본 프로그램 2개 설치 (Git, Node.js)</span><span class="free-only">기본 프로그램 설치 (Node.js)</span></h2><div class="time">⏱ 5~10분</div></div></div>
+    <p><span class="paid-only">Claude Code와 Vercel이</span><span class="free-only">Vercel 배포 도구가</span> 뒤에서 쓰는 도구예요. 설치만 해두면 직접 만질 일은 거의 없어요.</p>
 
+    <div class="paid-only">
     <h3><span class="sub">2-1</span>Git 설치</h3>
     <div class="win-only">
       <div class="shots">
@@ -374,8 +410,9 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48p
         <figcaption>이런 창이 뜨면 <b>① 설치</b> → 동의 → 끝날 때까지 기다리기. "이미 설치되어 있다"는 말이 나오면 그냥 넘어가면 돼요.</figcaption>
       </figure>
     </div>
+    </div>
 
-    <h3><span class="sub">2-2</span>Node.js 설치</h3>
+    <h3><span class="sub"><span class="paid-only">2-2</span><span class="free-only">2-1</span></span>Node.js 설치</h3>
     <figure class="shot">
       <div class="frame">
         <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">nodejs.org/ko</div></div>
@@ -390,22 +427,23 @@ footer{text-align:center;color:var(--muted);font-size:14px;padding:32px 16px 48p
       <p>설치가 끝나면 열려 있던 터미널을 <b>완전히 닫고 새로 여세요.</b> 새로 열어야 방금 설치한 걸 알아봐요.</p>
     </div>
     <p>제대로 깔렸는지 확인해요. 아래를 붙여넣고 Enter:</p>
-    <div class="cmd"><span class="label">터미널</span><pre>git --version
+    <div class="cmd paid-only"><span class="label">터미널</span><pre>git --version
 node --version</pre><button>복사</button></div>
+    <div class="cmd free-only"><span class="label">터미널</span><pre>node --version</pre><button>복사</button></div>
     <figure class="shot">
       <div class="frame term">
         <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl"><span class="win-only">Windows PowerShell</span><span class="mac-only">터미널</span></div></div>
-<div class="pg"><span class="t-p">&gt;</span> git --version
-<span class="t-g hl" data-n="✓">git version 2.xx.x</span>
-<span class="t-p">&gt;</span> node --version
-<span class="t-g">v22.xx.x</span></div>
+<div class="pg"><span class="paid-only"><span class="t-p">&gt;</span> git --version
+<span class="t-g">git version 2.xx.x</span>
+</span><span class="t-p">&gt;</span> node --version
+<span class="t-g hl" data-n="✓">v22.xx.x</span></div>
       </div>
       <figcaption>이렇게 <b>숫자(버전)</b>가 나오면 성공! 숫자는 달라도 괜찮아요.</figcaption>
     </figure>
     <button class="done-btn">✓ 다 했어요</button>
   </section>
 
-  <section class="step pc-only" id="s3" data-title="Claude Code 설치">
+  <section class="step pc-only paid-only" id="s3" data-title="Claude Code 설치">
     <div class="step-head"><div class="num">3</div><div><h2>Claude Code 설치하고 로그인</h2><div class="time">⏱ 5분</div></div></div>
 
     <h3><span class="sub">3-1</span>설치 명령 한 줄</h3>
@@ -459,8 +497,9 @@ Select login method:
   </section>
 
   <section class="step pc-only" id="s4" data-title="VS Code 연결">
-    <div class="step-head"><div class="num">4</div><div><h2>VS Code 설치하고 Claude 연결하기</h2><div class="time">⏱ 5분</div></div></div>
-    <p>VS Code를 쓰면 Claude가 만든 파일을 눈으로 보면서 작업할 수 있어요.</p>
+    <div class="step-head"><div class="num">4</div><div><h2>VS Code 설치하고 <span class="paid-only">Claude</span><span class="free-only">Copilot</span> 연결하기</h2><div class="time">⏱ 5분</div></div></div>
+    <p class="paid-only">VS Code를 쓰면 Claude가 만든 파일을 눈으로 보면서 작업할 수 있어요.</p>
+    <p class="free-only">VS Code는 무료 편집 프로그램이고, 무료 AI 도우미 <b>GitHub Copilot</b>이 안에 들어 있어요.</p>
 
     <h3><span class="sub">4-1</span>VS Code 설치</h3>
     <p><a href="https://code.visualstudio.com" target="_blank" rel="noopener">code.visualstudio.com</a> → 파란 <b>Download</b> 버튼 → 설치. <span class="win-only">설치 중 체크 항목은 그대로 두고 <b>다음</b>.</span><span class="mac-only">받은 앱을 <b>응용 프로그램</b> 폴더로 옮겨요.</span></p>
@@ -483,6 +522,45 @@ Select login method:
       <figcaption><b>① 파일</b> 메뉴 → <b>② 폴더 열기</b> → 방금 만든 <code>my-site</code> 폴더 선택. "작성자를 신뢰하나요?"가 뜨면 <b>예, 신뢰합니다</b>.</figcaption>
     </figure>
 
+    <div class="free-only">
+    <h3><span class="sub">4-3</span>Copilot 켜기 (GitHub로 로그인)</h3>
+    <figure class="shot">
+      <div class="frame vsc">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">my-site</div><span class="hl" data-n="1" style="color:#ddd;font-size:13px;padding:0 4px;flex:none">✦ 채팅</span></div>
+        <div class="vsc-body">
+          <div class="vsc-act"><span>📄</span><span>🔍</span><span>⑂</span><span>⊞</span></div>
+          <div class="vsc-main" style="display:grid;place-items:center;color:#666">편집 영역</div>
+          <div class="vsc-side" style="display:flex;flex-direction:column;gap:8px">
+            <b style="color:#ddd">채팅</b>
+            <div style="color:#bbb">GitHub Copilot을 <b style="color:#fff">무료</b>로 사용해 보세요</div>
+            <span class="vbtn hl" data-n="2" style="text-align:center;padding:4px 10px">GitHub로 로그인</span>
+          </div>
+        </div>
+      </div>
+      <figcaption>VS Code 맨 위 가운데쯤 <b>① Copilot(채팅) 아이콘</b> → <b>② GitHub로 로그인(Sign in)</b> → 브라우저에서 GitHub 승인 → VS Code로 돌아오면 끝. 단축키 <kbd class="win-only">Ctrl+Alt+I</kbd><kbd class="mac-only">⌃+⌘+I</kbd>로도 열려요.</figcaption>
+    </figure>
+    <figure class="shot">
+      <div class="frame vsc">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">채팅 — my-site</div></div>
+        <div class="vsc-body" style="min-height:150px">
+          <div class="vsc-main" style="display:flex;flex-direction:column;justify-content:flex-end;gap:8px">
+            <div style="color:#888">무엇을 만들어 볼까요?</div>
+            <div style="border:1px solid #555;border-radius:8px;padding:8px;color:#888">메시지 입력…</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="copilot-chip hl" data-n="1">에이전트(Agent) ▾</span>
+              <span class="copilot-chip">자동(Auto) ▾</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>채팅창 아래 모드를 꼭 <b>① 에이전트(Agent)</b>로 바꿔주세요. <b>질문(Ask)</b> 모드는 설명만 하고 파일을 만들어 주지 않아요.</figcaption>
+    </figure>
+    <div class="note info"><b>🔀 Copilot 아이콘이 안 보이면</b>
+      <p>왼쪽 <b>확장(네모 4개)</b>에서 <b>GitHub Copilot Chat</b>을 검색해 설치(만든 곳: GitHub)하고 VS Code를 다시 켜보세요.</p>
+    </div>
+    </div>
+
+    <div class="paid-only">
     <h3><span class="sub">4-3</span>Claude Code 확장 설치</h3>
     <figure class="shot">
       <div class="frame vsc">
@@ -523,17 +601,33 @@ Select login method:
     <div class="note info"><b>🔀 아이콘이 안 보이면: VS Code 터미널에서 쓰기</b>
       <p>위 메뉴 <b>터미널 → 새 터미널</b> → <code>claude</code> 입력. 이렇게 켜도 VS Code와 자동 연결돼요. 연결이 안 된 것 같으면 Claude에서 <code>/ide</code> 입력.</p>
     </div>
+    </div>
     <button class="done-btn">✓ 다 했어요</button>
   </section>
 
   <section class="step pc-only" id="s5" data-title="사이트 만들기">
     <div class="step-head"><div class="num">5</div><div><h2>말로 시켜서 웹사이트 만들기</h2><div class="time">⏱ 5~10분</div></div></div>
-    <p>Claude 채팅창에 <b>원하는 걸 평소 말투로</b> 적으면 돼요.</p>
+    <p><span class="paid-only">Claude</span><span class="free-only">Copilot(에이전트 모드)</span> 채팅창에 <b>원하는 걸 평소 말투로</b> 적으면 돼요.</p>
     <div class="prompt">우리 동네 빵집 소개 사이트 만들어줘. 메뉴, 영업시간, 오시는 길, 인스타 링크 넣고 따뜻한 느낌으로. 휴대폰에서도 잘 보이게. HTML 파일 하나로.</div>
     <div class="prompt">내 포트폴리오 사이트 만들어줘. 이름은 홍길동, 사진작가야. 작품 갤러리랑 연락처 섹션 넣어줘.</div>
 
     <h3><span class="sub">5-1</span>"해도 될까요?" 물어보면</h3>
-    <figure class="shot">
+    <figure class="shot free-only">
+      <div class="frame vsc">
+        <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">채팅 — my-site</div></div>
+        <div class="vsc-body" style="min-height:0">
+          <div class="vsc-main" style="font-size:12.5px;line-height:1.7">
+            <div style="color:#ddd">✦ index.html을 만들었어요. 메뉴·영업시간·오시는 길 섹션이 들어 있어요.</div>
+            <div style="margin:8px 0"><span class="copilot-chip">📄 index.html <span style="color:#7ee787">+214</span></span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="vbtn hl" data-n="1">Keep (유지)</span><span class="copilot-chip">Undo (취소)</span></div>
+            <div style="margin-top:14px;border:1px solid #555;border-radius:8px;padding:8px;color:#ccc">명령을 실행할까요? <code style="background:#333;color:#ddd">npm …</code>
+              <div style="margin-top:6px;display:flex;gap:8px"><span class="vbtn hl" data-n="2">Allow (허용)</span><span class="copilot-chip">Skip</span></div></div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Copilot이 파일을 만들면 <b>① Keep(유지)</b>을 눌러 저장해요. 터미널 명령을 실행하려 할 때는 내용을 보고 <b>② Allow(허용)</b> 또는 <b>Continue(계속)</b>.</figcaption>
+    </figure>
+    <figure class="shot paid-only">
       <div class="frame term">
         <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="ttl">Claude Code</div></div>
 <div class="pg"><span class="t-w">Create file</span>  index.html
@@ -612,8 +706,8 @@ Do you want to create <span class="t-y">index.html</span>?
       </div>
       <figcaption>질문이 몇 개 나오는데 거의 <b>Enter</b>만 누르면 돼요. 마지막 <b>★ https://….vercel.app</b>이 내 사이트 주소예요!</figcaption>
     </figure>
-    <div class="note tip"><b>🤖 더 쉬운 방법: Claude에게 맡기기</b>
-      <p>가입과 <code>vercel login</code>만 해두면 나머지는 이렇게 말해도 돼요.</p>
+    <div class="note tip"><b>🤖 더 쉬운 방법: <span class="paid-only">Claude</span><span class="free-only">Copilot</span>에게 맡기기</b>
+      <p>가입과 <code>vercel login</code>만 해두면 나머지는 이렇게 말해도 돼요.<span class="free-only"> (에이전트 모드에서, 명령 실행을 물어보면 허용)</span></p>
       <div class="prompt" style="margin-bottom:0">이 사이트 Vercel로 배포해줘</div>
     </div>
     <button class="done-btn">✓ 다 했어요</button>
@@ -622,8 +716,8 @@ Do you want to create <span class="t-y">index.html</span>?
   <section class="step pc-only" id="s7" data-title="수정·다시 올리기">
     <div class="step-head"><div class="num">7</div><div><h2>수정하고 다시 올리기</h2><div class="time">⏱ 1분</div></div></div>
     <ol class="do">
-      <li>VS Code에서 폴더 열기 → Claude에게 고칠 내용 말하기</li>
-      <li>터미널에서 다시 배포 (또는 Claude에게 "다시 배포해줘")</li>
+      <li>VS Code에서 폴더 열기 → <span class="paid-only">Claude</span><span class="free-only">Copilot</span>에게 고칠 내용 말하기</li>
+      <li>터미널에서 다시 배포 (또는 <span class="paid-only">Claude</span><span class="free-only">Copilot</span>에게 "다시 배포해줘")</li>
     </ol>
     <div class="cmd"><span class="label">터미널</span><pre>vercel --prod</pre><button>복사</button></div>
     <p>두 번째부터는 질문 없이 바로 올라가고 <b>주소는 그대로</b>예요.</p>
@@ -777,10 +871,16 @@ Do you want to create <span class="t-y">index.html</span>?
     <details class="pc-only"><summary>"claude"(또는 git, node, vercel)을 찾을 수 없다고 나와요</summary><div>
       <p>설치 직후라 터미널이 아직 몰라서 그래요. <b>터미널(또는 VS Code)을 완전히 껐다 켜세요.</b> 그래도 안 되면 컴퓨터를 재시작하고, 그래도 안 되면 3단계 설치 명령을 다시 실행해 보세요.</p>
     </div></details>
-    <details><summary>Claude Code를 쓸 수 없다고 나와요</summary><div>
+    <details class="free-only pc-only"><summary>Copilot이 설명만 하고 파일을 안 만들어요</summary><div>
+      <p>채팅창 아래 모드가 <b>질문(Ask)</b>으로 되어 있어서 그래요. <b>에이전트(Agent)</b>로 바꾸고 다시 요청하세요. 만든 뒤에는 <b>Keep(유지)</b>을 눌러야 파일이 저장돼요.</p>
+    </div></details>
+    <details class="free-only pc-only"><summary>Copilot이 "한도에 도달했다"고 나와요</summary><div>
+      <p>무료 플랜의 한 달 사용량을 다 쓴 거예요. 다음 달에 다시 채워지니 기다리거나, 계속 쓰고 싶으면 위에서 <b>유료</b> 트랙(Claude Code)으로 바꿔서 이어가도 돼요. 이미 만든 파일은 그대로 쓸 수 있어요.</p>
+    </div></details>
+    <details class="paid-only"><summary>Claude Code를 쓸 수 없다고 나와요</summary><div>
       <p>Claude <b>무료 플랜</b>에서는 Claude Code를 쓸 수 없어요. <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>에서 Pro 이상인지 확인하세요. 다른 계정으로 로그인됐다면 <code>/logout</code> 후 <code>/login</code>.</p>
     </div></details>
-    <details class="pc-only"><summary>VS Code에 Claude 아이콘이 안 보여요</summary><div>
+    <details class="pc-only paid-only"><summary>VS Code에 Claude 아이콘이 안 보여요</summary><div>
       <p>VS Code를 재시작하거나 아무 파일이나 하나 열어보세요. 확장 목록에서 <b>Claude Code</b>가 켜져 있는지도 확인하세요. 안 되면 VS Code 터미널에서 <code>claude</code>를 실행해도 똑같이 쓸 수 있어요.</p>
     </div></details>
     <details class="phone-only"><summary>Claude 앱에 Code 메뉴가 안 보여요</summary><div>
@@ -800,7 +900,8 @@ Do you want to create <span class="t-y">index.html</span>?
       <p>에러 문구를 통째로 복사해서 Claude에게 붙여넣고 <b>"이거 무슨 뜻이야? 해결해줘"</b>라고 하세요. 제일 빠른 해결법이에요. 😉</p>
     </div></details>
     <details><summary>돈이 드나요?</summary><div>
-      <p>Claude Code는 Claude 유료 구독(Pro 이상)이 필요해요. VS Code·Git·Node.js·GitHub는 무료, Vercel도 개인용 <b>Hobby 플랜은 무료</b>예요. 도메인을 따로 사면 그 비용만 들어요.</p>
+      <p><b>무료 트랙</b>은 0원이에요. VS Code·GitHub Copilot 무료 플랜·Node.js·GitHub·Vercel 개인용(Hobby) 모두 무료예요. (Copilot 무료 플랜은 한 달 사용량 제한이 있어요)</p>
+      <p><b>유료 트랙</b>은 Claude 유료 구독(Pro 이상)만 필요하고 나머지는 같아요. 도메인을 따로 사면 그 비용만 들어요.</p>
     </div></details>
   </section>
 
@@ -808,7 +909,9 @@ Do you want to create <span class="t-y">index.html</span>?
     <div class="step-head"><div class="num dark">가</div><div><h2>용어 사전</h2><div class="time">몰라도 되지만 알면 덜 무서운 말들</div></div></div>
     <div class="glossary">
       <div><b>터미널 / CLI</b>글자로 명령하는 창. CLI는 "글자로 쓰는 프로그램"이라는 뜻.</div>
-      <div><b>Claude Code</b>파일을 직접 만들고 고쳐주는 AI 코딩 도우미.</div>
+      <div><b>Claude Code</b>파일을 직접 만들고 고쳐주는 AI 코딩 도우미. (유료)</div>
+      <div><b>GitHub Copilot</b>VS Code 안에 들어 있는 AI 코딩 도우미. 무료 플랜이 있음.</div>
+      <div><b>에이전트(Agent) 모드</b>AI가 설명만 하지 않고 파일을 직접 만들고 명령까지 실행하는 모드.</div>
       <div><b>VS Code</b>코드 파일을 보고 편집하는 무료 프로그램. 아주 똑똑한 메모장.</div>
       <div><b>확장(Extension)</b>VS Code에 기능을 더하는 앱. 폰에 앱 까는 것과 비슷.</div>
       <div><b>GitHub / 저장소</b>코드 파일을 보관하는 온라인 보관함. 보관함 하나 = 저장소(repository).</div>
@@ -857,13 +960,18 @@ Do you want to create <span class="t-y">index.html</span>?
   var toc=document.getElementById('toc'), mnav=document.getElementById('mnav');
   var allSteps=[].slice.call(document.querySelectorAll('section.step[data-title]'));
   var done={}; try{done=JSON.parse(store.get('howto-done')||'{}')}catch(e){done={}}
-  var curOS='win';
+  var curOS='win', curTrack='free';
 
   function visibleSteps(){ return allSteps.filter(function(s){ return s.offsetParent!==null; }); }
 
   function buildNav(){
     toc.innerHTML=''; mnav.innerHTML='';
     visibleSteps().forEach(function(s,i){
+      s.querySelector('.num').textContent=i+1;
+      s.querySelectorAll('.sub, .sub span').forEach(function(el){
+        if(el.children.length) return;
+        var m=el.textContent.match(/^\d+-(\d+)$/); if(m) el.textContent=(i+1)+'-'+m[1];
+      });
       var li=document.createElement('li');
       li.innerHTML='<a href="#'+s.id+'"><span class="dot">'+(i+1)+'</span>'+s.dataset.title+'</a>';
       toc.appendChild(li);
@@ -888,16 +996,23 @@ Do you want to create <span class="t-y">index.html</span>?
     document.getElementById('barLabel').textContent=n+' / '+vs.length+' 완료';
   }
 
-  function setOS(os, scroll){
-    curOS=os;
+  function pcOS(){ return curOS!=='phone' ? curOS : ((!isTouch && /Mac/.test(navigator.platform||'')) ? 'mac' : 'win'); }
+
+  function setMode(os, track, scroll){
+    if(os==='phone') track='paid';            // 휴대폰 방법은 Claude 유료만 가능
+    curOS=os; curTrack=track;
     document.body.setAttribute('data-os',os);
+    document.body.setAttribute('data-track',track);
     document.querySelectorAll('[data-os-btn]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.osBtn===os)); });
-    document.querySelectorAll('[data-path]').forEach(function(b){ b.setAttribute('aria-pressed', String((b.dataset.path==='phone')===(os==='phone'))); });
-    document.getElementById('askOS').value={win:'컴퓨터(Windows)',mac:'컴퓨터(Mac)',phone:'휴대폰'}[os];
-    store.set('howto-os',os);
+    document.querySelectorAll('[data-track-btn]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.trackBtn===track)); });
+    var pick = os==='phone' ? 'phone' : track;
+    document.querySelectorAll('[data-pick]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.pick===pick)); });
+    document.getElementById('askOS').value=({free:'무료',paid:'유료'}[track])+' / '+({win:'컴퓨터(Windows)',mac:'컴퓨터(Mac)',phone:'휴대폰'}[os]);
+    store.set('howto-os',os); store.set('howto-track',track);
     buildNav();
     if(scroll){ var first=visibleSteps()[0]; if(first) first.scrollIntoView({behavior:'smooth'}); }
   }
+  function setOS(os){ setMode(os, curTrack); }
 
   allSteps.forEach(function(s){
     s.querySelector('.done-btn').addEventListener('click',function(){
@@ -910,20 +1025,28 @@ Do you want to create <span class="t-y">index.html</span>?
   });
 
   document.querySelectorAll('[data-os-btn]').forEach(function(b){ b.addEventListener('click',function(){ setOS(b.dataset.osBtn); }); });
-  document.querySelectorAll('[data-path]').forEach(function(b){
+  document.querySelectorAll('[data-track-btn]').forEach(function(b){
     b.addEventListener('click',function(){
-      var os = b.dataset.path==='phone' ? 'phone' : (/Mac/.test(navigator.platform||'') ? 'mac' : (curOS==='phone'?'win':curOS));
-      setOS(os, true);
+      var t=b.dataset.trackBtn;
+      setMode(t==='free' ? pcOS() : curOS, t);
+    });
+  });
+  document.querySelectorAll('[data-pick]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var p=b.dataset.pick;
+      if(p==='phone') setMode('phone','paid',true); else setMode(pcOS(), p, true);
     });
   });
 
-  var saved=store.get('howto-os');
+  var saved=store.get('howto-os'), savedTrack=store.get('howto-track')||'free';
   var qm=(location.search.match(/[?&]mode=(win|mac|phone)/)||[])[1];
+  var qt=(location.search.match(/[?&]track=(free|paid)/)||[])[1];
   if(qm) saved=qm;
   else if(/^#p\d/.test(location.hash)) saved='phone';
   else if(/^#s\d/.test(location.hash) && saved==='phone') saved='win';
+  if(qt){ savedTrack=qt; if(qt==='free' && saved==='phone') saved=null; }
   if(!saved){ saved = (!isTouch && /Mac/.test(navigator.platform||navigator.userAgent)) ? 'mac' : 'win'; }
-  setOS(saved);
+  setMode(saved, savedTrack);
 
   // copy buttons
   document.querySelectorAll('.cmd button').forEach(function(btn){
