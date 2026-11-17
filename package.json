@@ -1,0 +1,7 @@
+{
+  "name": "claude-howto",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
